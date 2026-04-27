@@ -1,20 +1,36 @@
-import { 
+import { useState } from 'react'
+import {
   Center,
   Input,
   Box,
   VStack,
-  Heading
+  Heading,
+  Text
 } from '@chakra-ui/react'
-import { login } from '../services/login'
+import { useAuth } from '../contexts/AuthContext'
 import { Button } from './Button'
 
 export const Card = () => {
-  return(
-    <Box 
-      backgroundColor='#FFFFFF' 
-      borderRadius='25px' 
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const { signIn } = useAuth()
+
+  const handleLogin = () => {
+    const result = signIn(email, password)
+    if (!result.success) {
+      setError(result.message)
+      return
+    }
+    setError('')
+  }
+
+  return (
+    <Box
+      backgroundColor='#FFFFFF'
+      borderRadius='25px'
       padding='40px'
-      width={['300px', '400px']} // Responsivo: maior em telas grandes
+      width={['300px', '400px']}
       boxShadow="dark-lg"
     >
       <VStack spacing={6}>
@@ -23,26 +39,36 @@ export const Card = () => {
             Login
           </Heading>
         </Center>
-        
-        <Input 
-          placeholder="E-mail" 
-          variant="flushed" 
-          borderColor="purple.300" 
-          focusBorderColor="purple.600"
-          _placeholder={{ color: 'gray.400' }}
-        />
-        
-        <Input 
-          placeholder="Senha" 
-          type="password" 
-          variant="flushed" 
+
+        <Input
+          placeholder="E-mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          variant="flushed"
           borderColor="purple.300"
           focusBorderColor="purple.600"
           _placeholder={{ color: 'gray.400' }}
         />
-        
+
+        <Input
+          placeholder="Senha"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          variant="flushed"
+          borderColor="purple.300"
+          focusBorderColor="purple.600"
+          _placeholder={{ color: 'gray.400' }}
+        />
+
+        {error && (
+          <Text color="red.500" fontSize="sm" alignSelf="flex-start">
+            {error}
+          </Text>
+        )}
+
         <Center width="100%" paddingTop="10px">
-          <Button onClick={login} />
+          <Button onClick={handleLogin} />
         </Center>
       </VStack>
     </Box>
