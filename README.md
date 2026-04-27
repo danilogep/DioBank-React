@@ -1,6 +1,6 @@
 # Dio Bank - Interface Moderna (React + TS)
 
-Projeto desenvolvido durante o bootcamp da DIO, refatorado para apresentar uma arquitetura moderna, limpa e uma identidade visual alinhada com as tendências de "Neo Banks".
+Projeto desenvolvido durante o bootcamp da DIO, refatorado para apresentar uma arquitetura moderna, limpa e uma identidade visual alinhada com as tendências de "Neo Banks". Posteriormente evoluído com sistema completo de autenticação utilizando Context API, persistência em `localStorage` e cobertura de testes via TDD.
 
 ## 📷 Demonstração Visual
 
@@ -15,6 +15,8 @@ Projeto desenvolvido durante o bootcamp da DIO, refatorado para apresentar uma a
 - **React** (Create React App)
 - **TypeScript** (Tipagem estática)
 - **Chakra UI** (Interface declarativa e acessível)
+- **Context API** (Gerenciamento de estado global)
+- **localStorage** (Persistência de sessão)
 - **Jest** & **Testing Library** (Testes Unitários)
 
 ## 🎨 Mudanças e Melhorias Implementadas
@@ -28,16 +30,51 @@ Projeto desenvolvido durante o bootcamp da DIO, refatorado para apresentar uma a
 ### Arquitetura & Código
 - **Refatoração do App.tsx:** Limpeza do componente raiz, delegando a responsabilidade de layout para componentes filhos.
 - **Componentização:**
-  - `Card.tsx`: Transformado em um container inteligente que engloba o formulário de login.
+  - `Card.tsx`: Container inteligente com formulário de login controlado e tratamento de erro.
   - `Button.tsx`: Componente isolado e reutilizável, recebendo eventos via props.
   - `Header.tsx`: Uso de tags semânticas (`<header>`) para SEO e acessibilidade.
-- **Testes:** Implementação de testes unitários para o serviço de login, incluindo Mock do `window.alert`.
+  - `UserPage.tsx`: Tela de perfil do usuário autenticado.
+- **Gerenciamento de Estado:** Context API para autenticação global, com hook `useAuth` para consumo simplificado.
+- **Persistência:** Sessão do usuário mantida em `localStorage` com hidratação automática ao iniciar a aplicação.
+- **Testes:** Implementação de testes unitários para serviços e contexto, incluindo cenários de TDD.
+
+## 🏗️ Estrutura do Projeto
+
+```
+src/
+├── contexts/
+│   ├── AuthContext.tsx        ← Provider + hook useAuth
+│   └── AuthContext.test.tsx   ← Testes do contexto
+├── components/
+│   ├── Button.tsx             ← Botão reutilizável
+│   ├── Card.tsx               ← Formulário de login (inputs controlados)
+│   ├── Footer.tsx             ← Rodapé
+│   ├── Header/                ← Cabeçalho com identidade visual
+│   ├── Layout.tsx             ← Wrapper de layout
+│   └── UserPage.tsx           ← Tela do usuário autenticado
+├── services/
+│   ├── login.tsx              ← Função pura de validação
+│   ├── login.test.tsx         ← Testes TDD de validação
+│   ├── soma.tsx               ← Funções utilitárias do bootcamp
+│   └── soma.test.tsx          ← Testes originais do bootcamp
+└── App.tsx                    ← AuthProvider + render condicional
+```
+
+## 🧠 Decisões Técnicas
+
+- **Separação de responsabilidades:** A regra de negócio (`services/login`) foi isolada do gerenciamento de estado (`AuthContext`). A função `login` é pura e retorna um objeto tipado (`ILoginResult`), enquanto o contexto cuida dos efeitos colaterais (estado React + `localStorage`). Isso facilita os testes e permite trocar a implementação (ex: substituir validação local por chamada a uma API com JWT) sem alterar o restante da aplicação.
+
+- **Hidratação do estado:** O `useState` do `AuthProvider` é inicializado por meio de uma função (lazy initialization) que lê o `localStorage`. Assim, ao recarregar a página, o usuário já autenticado é reconhecido antes da primeira renderização e a tela de login não chega a ser exibida.
+
+- **Inputs controlados:** O `Card` controla os campos de e-mail e senha via `useState` e exibe a mensagem de erro retornada pelo serviço de autenticação, melhorando a experiência do usuário.
+
+- **Renderização condicional:** Em vez de adicionar uma biblioteca de roteamento, a navegação entre tela de login e perfil é feita por meio do estado `isAuthenticated`, mantendo o bundle enxuto e atendendo ao requisito do desafio.
 
 ## 📦 Como rodar o projeto
 
 1. **Clone o repositório**
    ```bash
-   git clone [https://github.com/danilogep/DioBank-Front-ts-react](https://github.com/danilogep/DioBank-Front-ts-react)
+   git clone https://github.com/danilogep/DioBank-Front-ts-react
    ```
 
 2. **Instale as dependências**
@@ -49,16 +86,31 @@ Projeto desenvolvido durante o bootcamp da DIO, refatorado para apresentar uma a
    ```bash
    npm start
    ```
-Acesse http://localhost:3000 no seu navegador.
+   Acesse http://localhost:3000 no seu navegador.
 
 4. **Rodar Testes**
    ```bash
    npm test
    ```
 
+## 🔑 Credenciais para Teste
+
+| Campo  | Valor             |
+| ------ | ----------------- |
+| E-mail | `danilo@dio.com`  |
+| Senha  | `123456`          |
+
+## 🧪 Cobertura de Testes
+
+| Arquivo                  | O que cobre                                                          |
+| ------------------------ | -------------------------------------------------------------------- |
+| `login.test.tsx`         | Campos vazios, usuário inexistente, senha incorreta, login válido    |
+| `AuthContext.test.tsx`   | Estado inicial, autenticação, persistência, hidratação e logout      |
+| `soma.test.tsx`          | Testes originais do bootcamp (mantidos)                              |
+
 ## ✅ Desafios Concluídos
 
-Abaixo, a lista de tarefas propostas no desafio original, todas devidamente implementadas:
+### Etapa 1 — Componentização e Estrutura Inicial
 
 - [x] **Criar componentes na página inicial**
   - [x] Criar componente para o `Header` com título e slogan.
@@ -70,5 +122,43 @@ Abaixo, a lista de tarefas propostas no desafio original, todas devidamente impl
   - [x] Exibir `alert` de boas-vindas ao clicar no botão.
   - [x] Criar teste unitário (`login.test.tsx`) validando a chamada da função.
 
+### Etapa 2 — Autenticação Completa com Context API
+
+- [x] **Validação da senha no campo de login**
+  - [x] Função `login(email, password)` realiza a validação completa das credenciais.
+  - [x] Testes unitários escritos sob a abordagem TDD em `services/login.test.tsx`.
+
+- [x] **Sistema de login com Context API**
+  - [x] Estado global da autenticação criado em `contexts/AuthContext.tsx`.
+  - [x] Dados do usuário persistidos no `localStorage` na chave `@DioBank:user`.
+  - [x] Tela de login ocultada automaticamente quando há sessão ativa no `localStorage`.
+
+- [x] **Página de informações do usuário**
+  - [x] Componente `UserPage` exibindo nome e e-mail do usuário logado.
+  - [x] Acesso restrito a usuários autenticados (renderização condicional).
+  - [x] Botão de logout que limpa o estado global e o `localStorage`.
+  - [x] Testes unitários para o `AuthContext` cobrindo sign in, sign out e hidratação.
+
+- [x] **Deploy no Netlify**
+  - 🔗 **Acesse:** [Dio Bank - Danilo](https://gorgeous-gumdrop-8ebe09.netlify.app/)
+
+## 🚀 Deploy no Netlify
+
+O projeto está integrado ao Netlify via GitHub, com deploy contínuo a cada push na branch `main`.
+
+**Configurações de build:**
+
+- **Build command:** `npm run build`
+- **Publish directory:** `build`
+- **Node version:** 18
+
+Para realizar o deploy manualmente via CLI:
+
+```bash
+npm run build
+npx netlify-cli deploy --prod --dir=build
+```
+
 ---
-Desenvolvido originalmente por [Nathally Souza](https://github.com/nathyts) e refatorado por [Danilo Evangelista](https://github.com/danilogep)
+
+Desenvolvido originalmente por [Nathally Souza](https://github.com/nathyts), refatorado e expandido por [Danilo Evangelista](https://github.com/danilogep)
